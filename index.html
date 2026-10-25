@@ -37,7 +37,7 @@ function start(){state='play';$('#overlay').classList.add('hidden');$('#tutorial
 function reset(deathReset=true){p.x=p.checkpoint;p.y=ground-42;p.vx=0;p.vy=0;p.slide=false;p.dash=0;p.slam=false;p.inv=1.5;p.ground=false;history=[];rew=false;rewindCd=0;dashCd=0;blinkCd=0;slamCd=0;slideTime=0;cam=clamp(p.x-W*.28,0,levelWidth()-W);if(deathReset){loop++;$('#loop').textContent=String(loop).padStart(2,'0')}state='play';$('#overlay').classList.add('hidden')}
 function levelWidth(){return 4700}
 function pause(){if(state==='play'){state='pause';$('#overlay').classList.remove('hidden');$('#overlay .eyebrow').textContent='TIME SUSPENDED';$('#overlay h1').innerHTML='THE RUINS <span>WAIT</span>';$('#overlay p').textContent='The snail never truly stops. Resume when you are ready.';$('#start').textContent='RESUME';}else if(state==='pause'){state='play';$('#overlay').classList.add('hidden')}}
-$('#start').addEventListener('click',()=>{if(state==='pause'){pause()}else if(state==='dead'||state==='win'){p.checkpoint=90;loop=1;$('#loop').textContent='01';seal.on=false;gate.open=false;snail.x=-70;snail.mem=[];start()}else start()});
+$('#start').addEventListener('click',()=>{if(state==='pause'){pause()}else if(state==='dead'){reset(true)}else if(state==='win'){p.checkpoint=90;loop=1;$('#loop').textContent='01';seal.on=false;gate.open=false;snail.x=-70;snail.mem=[];start()}else start()});
 function update(dt){clock+=dt;if(state!=='play')return;dashCd=Math.max(0,dashCd-dt);blinkCd=Math.max(0,blinkCd-dt);slamCd=Math.max(0,slamCd-dt);rewindCd=Math.max(0,rewindCd-dt);p.inv=Math.max(0,p.inv-dt);slamFx=Math.max(0,slamFx-dt);toastT=Math.max(0,toastT-dt);if(shake>0)shake=Math.max(0,shake-dt*25);if(hit('r')&&history.length>2)rew=!rew;if(!keys.r)rew=false;
 if(rew&&history.length&&rewindCd<=0){let s=history.pop();if(clearAt(s.x,s.y,p.w,s.h)){p.x=s.x;p.y=s.y;p.vx=s.vx;p.vy=s.vy;p.face=s.face;p.slide=s.slide;p.ground=s.ground;burst(p.x,p.y,'#70efff',1)}if(!history.length){rew=false;rewindCd=.3}}
 else {if(!rew){history.push({x:p.x,y:p.y,vx:p.vx,vy:p.vy,face:p.face,slide:p.slide,ground:p.ground,h:p.h});if(history.length>180)history.shift()}
@@ -52,6 +52,7 @@ for(const a of platforms){if(a.t===2)continue;if(p.x<a.x+a.w&&p.x+p.w>a.x&&p.y<a
 p.y+=p.vy*dt;p.ground=false;for(const a of platforms){if(a.t===2)continue;if(p.x<a.x+a.w&&p.x+p.w>a.x&&p.y+HGT()>=a.y&&p.y+HGT()<=a.y+22&&p.vy>=0){p.y=a.y-HGT();p.vy=0;p.ground=true;if(p.slam){slamImpact();p.slam=false}break}}
 if(p.y>H+100)die('You fell into the abyss.');
 for(const h of hazards)if(p.x+p.w>h.x&&p.x<h.x+h.w&&p.y+HGT()>h.y-4&&p.y<h.y+25)die('The temple spikes caught you.');
+if(p.x>2850&&p.checkpoint<2800){p.checkpoint=2840;$('#cp').textContent='CHECKPOINT SET';say('CHECKPOINT ANCHORED');burst(p.x,p.y,'#ffd18a',16)}
 if(!seal.on&&p.x+p.w>seal.x&&p.x<seal.x+seal.w&&Math.abs(p.y+HGT()-ground)<35&&p.slam)slamImpact();
 if(p.x>seal.x-45&&p.x<seal.x+seal.w+45&&p.slam&&p.ground)slamImpact();
 if(p.x>gate.x-20&&!gate.open){p.x=gate.x-p.w;say('THE SEAL IS STILL DORMANT')}
